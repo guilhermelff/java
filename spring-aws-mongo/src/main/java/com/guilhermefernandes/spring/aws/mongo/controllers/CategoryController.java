@@ -4,6 +4,7 @@ package com.guilhermefernandes.spring.aws.mongo.controllers;
 import com.guilhermefernandes.spring.aws.mongo.domain.category.Category;
 import com.guilhermefernandes.spring.aws.mongo.domain.category.CategoryDTO;
 import com.guilhermefernandes.spring.aws.mongo.services.CategoryService;
+import jakarta.websocket.server.PathParam;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -31,5 +32,15 @@ public class CategoryController {
         return ResponseEntity.ok().body(categories);
     }
 
-    
+    @PutMapping("/{id}")
+    public ResponseEntity<Category> update(@PathParam("id") String id, @RequestBody CategoryDTO categoryData){
+        Category updatedCategory = this.service.update(id, categoryData);
+        return ResponseEntity.ok().body(updatedCategory);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Category> delete(@PathParam("id") String id){
+        this.service.delete(id);
+        return ResponseEntity.noContent().build();
+    }
 }
