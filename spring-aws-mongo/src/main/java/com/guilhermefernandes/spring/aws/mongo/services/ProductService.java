@@ -8,18 +8,22 @@ import com.guilhermefernandes.spring.aws.mongo.domain.product.ProductDTO;
 import com.guilhermefernandes.spring.aws.mongo.domain.product.exceptions.ProductNotFoundException;
 import com.guilhermefernandes.spring.aws.mongo.repositories.CategoryRepository;
 import com.guilhermefernandes.spring.aws.mongo.repositories.ProductRepository;
+import com.guilhermefernandes.spring.aws.mongo.services.aws.AwsSnsService;
+import com.guilhermefernandes.spring.aws.mongo.services.aws.MessageDTO;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
 public class ProductService {
-    private CategoryService categoryService;
-    private ProductRepository repository;
+    private final CategoryService categoryService;
+    private final ProductRepository repository;
+    private final AwsSnsService snsService;
 
-    public ProductService(CategoryService categoryService, ProductRepository productRepository){
+    public ProductService(CategoryService categoryService, ProductRepository productRepository, AwsSnsService snsService){
         this.categoryService = categoryService;
         this.repository = productRepository;
+        this.snsService = snsService;
     }
 
     public Product insert(ProductDTO productData){
@@ -27,6 +31,7 @@ public class ProductService {
         Product newProduct = new Product(productData);
         newProduct.setCategory(category);
         this.repository.save(newProduct);
+        this.snsService.publish(new MessageDTO(newProduct.getOwnerId()));
         return newProduct;
     }
 
@@ -43,6 +48,8 @@ public class ProductService {
         if(!(productData.price()==null)) product.setPrice(productData.price());
 
         this.repository.save(product);
+
+        this.snsService.publish(new MessageDTO(product.getOwnerId()));
 
         return product;
     }
