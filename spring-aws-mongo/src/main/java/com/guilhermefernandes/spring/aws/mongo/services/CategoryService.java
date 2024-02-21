@@ -4,7 +4,10 @@ import com.guilhermefernandes.spring.aws.mongo.domain.category.Category;
 import com.guilhermefernandes.spring.aws.mongo.domain.category.CategoryDTO;
 import com.guilhermefernandes.spring.aws.mongo.domain.category.exceptions.CategoryNotFoundException;
 import com.guilhermefernandes.spring.aws.mongo.repositories.CategoryRepository;
+import com.guilhermefernandes.spring.aws.mongo.services.aws.AwsSnsService;
+import com.guilhermefernandes.spring.aws.mongo.services.aws.MessageDTO;
 import org.springframework.stereotype.Service;
+
 
 import java.util.List;
 import java.util.Optional;
@@ -12,14 +15,17 @@ import java.util.Optional;
 @Service
 public class CategoryService {
     private CategoryRepository repository;
+    private final AwsSnsService snsService;
 
-    public CategoryService(CategoryRepository repository){
+    public CategoryService(CategoryRepository repository, AwsSnsService snsService){
         this.repository = repository;
+        this.snsService = snsService;
     }
 
     public Category insert(CategoryDTO categoryData){
         Category newCategory = new Category(categoryData);
         this.repository.save(newCategory);
+        this.snsService.publish(new MessageDTO(newCategory.toString()));
         return newCategory;
     }
 
@@ -30,6 +36,8 @@ public class CategoryService {
         if(!categoryData.description().isEmpty()) category.setDescription(categoryData.description());
 
         this.repository.save(category);
+
+        this.snsService.publish(new MessageDTO(category.toString()));
 
         return category;
     }
