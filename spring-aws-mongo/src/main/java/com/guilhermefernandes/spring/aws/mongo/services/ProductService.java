@@ -38,14 +38,13 @@ public class ProductService {
     public Product update(String id, ProductDTO productData){
         Product product = this.repository.findById(id).orElseThrow(ProductNotFoundException::new);
 
-        if(productData.categoryId()!=null){
-            this.categoryService.getById(productData.categoryId()).ifPresent(product::setCategory);
-            product.setCategory(productData.categoryId());
-        }
+        this.categoryService.getById(productData.categoryId())
+                .orElseThrow(CategoryNotFoundException::new);
 
         if(!productData.title().isEmpty()) product.setTitle(productData.title());
         if(!productData.description().isEmpty()) product.setDescription(productData.description());
-        if(!(productData.price()==null)) product.setPrice(productData.price());
+        if(!(productData.price() == null)) product.setPrice(productData.price());
+        if(!(productData.categoryId() == null)) product.setCategory(productData.categoryId());
 
         this.repository.save(product);
 
